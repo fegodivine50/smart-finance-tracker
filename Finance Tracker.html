@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Smart Finance Tracker</title>
+        <link rel="stylesheet" href="Finance Tracker.css">
+    </head>
+    <body>
+
+        <div class="tracker-container">
+            <h2>Expense & Budget  Visualizer</h2>
+
+            <!-- Balance Card -->
+             <div class="balance-card">
+                <small>Total Balance</small>
+                <h1 id="balance">$0.00</h1>
+             </div>
+
+             <!-- Inputs Form -->
+              <form id="finance-form">
+                <div class="input-group">
+                    <label for="text">Description</label>
+                    <input type="text" id="text" placeholder="e.g. Client Payment, Coffee..." required>
+                </div>
+
+                <div class="input-box">
+                    <label for="amount">Amount ($)</label>
+                    <input type="text" id="amount" placeholder="e.g. 200 (Income) or -15 (Expense)" step="any" required>
+                </div>
+
+                <button type="submit" class="btn">Add Transaction</button>
+              </form>
+
+              <!-- Transaction List -->
+               <h3>Transaction History</h3>
+               <ul id="list" class="list">
+                <!-- JavaScript will dynamic insert <li> items here later -->
+               </ul>
+        </div>
+
+        <script>
+            const balance = document.getElementById('balance');
+            const form = document.getElementById('finance-form');
+            const text = document.getElementById('text');
+            const amount = document.getElementById('amount');
+            const list = document.getElementById('list');
+
+            let transactions = [];
+
+            function generateID() {
+                return Math.floor(Math.random() * 100000000);
+            }
+
+            function addTransactionDOM(transaction) {
+                const sign = transaction.amount < 0 ? '-' : '+';
+                const item = document.createElement('li');
+
+                item.classList.add(transaction.amount < 0 ? 'minus' : 'plus');
+
+                item.innerHTML = `
+                    ${transaction.text} <span>${sign}$${Math.abs(transaction.amount)}</span>
+                    <button class="delete-btn" onclick="removeTransaction(${transaction.id})">x</button>
+                `;
+
+                list.appendChild(item);
+            }
+
+            function updateValues() {
+                const amounts = transactions.map(transaction => transaction.amount);
+
+                const total = amounts
+                    .reduce((acc, item) => (acc += item), 0)
+                    .toFixed(2);
+
+                balance.innerText = `$${total}`;
+            }
+
+            function removeTransaction(id) {
+                transactions = transactions.filter(transaction => transaction.id !== id);
+                init();
+            }
+
+            function addTransaction(e) {
+                e.preventDefault();
+
+                if (text.value.trim() === '' || amount.value.trim() === '') {
+                    alert('Please add a text description and an amount');
+                } else {
+                    const transaction = {
+                        id: generateID(),
+                        text: text.value,
+                        amount: +amount.value
+                    };
+
+                    transactions.push(transaction);
+                    addTransactionDOM(transaction);
+                    updateValues();
+
+                    text.value = '';
+                    amount.value = '';
+
+                    console.log(transactions);
+                }
+            }
+
+            // ADDED: Clears the list, re-renders remaining items, and recalculates the balance
+            function init() {
+                list.innerHTML = '';
+                transactions.forEach(addTransactionDOM);
+                updateValues();
+            }
+
+            form.addEventListener('submit', addTransaction);
+
+            // ADDED: Run init on load
+            init();
+        </script>
+    </body>
+</html>
